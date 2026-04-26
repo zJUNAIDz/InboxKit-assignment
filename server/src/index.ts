@@ -51,7 +51,6 @@ app.get(
 );
 
 export default {
-  // port: 3000,
   fetch: app.fetch,
   websocket,
 };

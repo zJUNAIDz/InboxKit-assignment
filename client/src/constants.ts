@@ -1,1 +1,2 @@
-export const API_BASE_URL = import.meta.env.API_BASE_URL || "https://m95krx44-3000.inc1.devtunnels.ms";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+console.log(`API Base URL: ${API_BASE_URL}`);

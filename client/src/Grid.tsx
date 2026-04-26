@@ -8,8 +8,8 @@ import type { Cell } from './types';
 
 const socketManager = SocketManager.getInstance();
 
-const queryClient = useQueryClient();
 const Grid = () => {
+  const queryClient = useQueryClient();
   const cells = useQuery<Cell[]>({
     queryKey: ['cells'],
     queryFn: async () => {
