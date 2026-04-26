@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { upgradeWebSocket, websocket } from "hono/bun";
+import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { cors } from "hono/cors";
 import GridManager from "./gridManager";
 import SocketManager from "./socketManager";
@@ -24,9 +24,6 @@ app.get(
   "/ws",
   upgradeWebSocket((c) => {
     return {
-      onOpen(evt, ws) {
-        socketManager.addClient(ws);
-      },
       onMessage(event, ws) {
         console.log(`Message from client: ${event.data.toString()}`);
         try {
@@ -50,7 +47,4 @@ app.get(
   }),
 );
 
-export default {
-  fetch: app.fetch,
-  websocket,
-};
+export default app;
