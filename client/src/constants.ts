@@ -1,0 +1,1 @@
+export const API_BASE_URL = import.meta.env.API_BASE_URL || "https://m95krx44-3000.inc1.devtunnels.ms";
