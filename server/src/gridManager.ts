@@ -9,8 +9,9 @@ class GridManager {
   private grid: Map<number, Cell>;
 
   constructor() {
+    // hardcoded grid population 
     this.grid = new Map<number, Cell>();
-    for (let i = 0; i < 500; i++) {
+    for (let i = 1; i < 500; i++) {
       this.grid.set(i, { id: i, owner: null, isClaimed: false });
     }
   }
@@ -24,13 +25,6 @@ class GridManager {
     const currentCell = this.grid.get(updatedCell.id);
     if (!currentCell) return;
     this.grid.set(updatedCell.id, updatedCell);
-
-    // // Only update if the incoming version is newer
-    // if (updatedCell.version > currentCell.version) {
-    // console.log(
-    //   `Cell ${updatedCell.id} updated to version ${updatedCell.version}`,
-    // );
-    // }
   }
   claimCell(id: number, owner: string): Cell | null {
     const cell = this.grid.get(id);
