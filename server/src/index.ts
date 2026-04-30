@@ -1,56 +1,40 @@
 import { Hono } from "hono";
-import { upgradeWebSocket, websocket } from "hono/bun";
 import { cors } from "hono/cors";
-import GridManager from "./gridManager";
-import SocketManager from "./socketManager";
 
-const app = new Hono();
-const gridManager = new GridManager();
-const socketManager = SocketManager.getInstance();
+const app = new Hono<{ Bindings: Env }>();
 
-app.use(cors({
-  origin: "*",
-  allowHeaders: ["Content-Type"],
-  allowMethods: ["GET", "POST", "OPTIONS"],
-}));
+app.use(
+  "*",
+  cors({
+    origin: "*",
+    allowHeaders: ["Content-Type"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+  })
+);
+
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
-app.get("/grid", (c) => {
-  const grid = gridManager.getAllCells();
-  return c.json(grid);
+
+app.get("/grid", async (c) => {
+  const id = c.env.MY_DURABLE_OBJECT.idFromName("global-grid");
+  const stub = c.env.MY_DURABLE_OBJECT.get(id);
+  return stub.fetch(c.req.raw);
 });
-app.get(
-  "/ws",
-  upgradeWebSocket((c) => {
-    return {
-      onOpen(evt, ws) {
-        socketManager.addClient(ws);
-      },
-      onMessage(event, ws) {
-        console.log(`Message from client: ${event.data.toString()}`);
-        try {
-          const message = JSON.parse(event.data.toString());
-          if (message.type === "claim_cell" || message.type === "unclaim_cell") {
-            socketManager.handleUpdateCellMessage(message, gridManager);
-          }
-        } catch (error) {
-          console.error("Error processing message:", error);
-        }
-      },
-      onClose(event, ws) {
-        console.log("WebSocket connection closed");
-        socketManager.removeClient(ws);
-      },
-      onError(event, ws) {
-        console.error("WebSocket error:", event);
-        socketManager.removeClient(ws);
-      },
-    };
-  }),
-);
+
+app.get("/ws", async (c) => {
+  const id = c.env.MY_DURABLE_OBJECT.idFromName("global-grid");
+  const stub = c.env.MY_DURABLE_OBJECT.get(id);
+  const response = await stub.fetch(c.req.raw);
+  
+  if (response.status === 101) {
+    return response;
+  }
+  return new Response("Expected websocket", { status: 426 });
+});
 
 export default {
   fetch: app.fetch,
-  websocket,
 };
+
+export { MyDurableObject } from "./DO";
